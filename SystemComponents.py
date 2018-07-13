@@ -93,6 +93,7 @@ class Machine:
     def __init__(self):
         self.__job_queue = queue.Queue()
         self.__checkpointing_queue = queue.Queue()
+        self.__to_be_checkpointed_queue = queue.Queue()
         self.__contention_data = {}
         self.__max_jobs = 0
 
@@ -130,7 +131,7 @@ class Machine:
             job.__elapse_time__()
             if job.__get_status__() == JobStatus.RUNNING and job.__get_remaining_time__() == 0:
                 job.__reset_at_checkpoint__()
-                self.__checkpointing_queue.put(job)
+                self.__to_be_checkpointed_queue.put(job)
             else:
                 self.__job_queue.put(job)
             queue_size -= 1
@@ -140,7 +141,7 @@ class Machine:
             self.__contention_data[queue_size] = 1
         else:
             self.__contention_data[queue_size] += 1
-        while not self.__checkpointing_queue.empty():
+        while not self.__checkpointing_queue.empty() and queue_size > 0:
             job = self.__checkpointing_queue.get()
             job.__elapse_time__()
             if job.__get_status__() == JobStatus.CHECKPOINTING and job.__get_remaining_time__() == 0:
@@ -149,6 +150,10 @@ class Machine:
             else:
                 self.__checkpointing_queue.put(job)
             queue_size -= 1
+
+        while not self.__to_be_checkpointed_queue.empty():
+            job = self.__to_be_checkpointed_queue.get()
+            self.__checkpointing_queue.put(job)
 
     def __get_contention_data__(self):
         return self.__contention_data
