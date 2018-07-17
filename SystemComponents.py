@@ -101,6 +101,10 @@ class Machine:
         self.__job_queue.put(job)
         self.__max_jobs += 1
 
+    def __add_job_list__(self, job_list):
+        for job in job_list:
+            self.__add_job__(job)
+
     def __get_job__(self):
         return self.__job_queue.get()
 
