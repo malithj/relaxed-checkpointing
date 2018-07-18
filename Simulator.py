@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from SystemComponents import Mode, Machine
 from multiprocessing import Pool
+import matplotlib.pyplot as plt
 import copy
 
 
@@ -91,6 +92,16 @@ class Simulator:
             print('{:2}'.format(k_con), '{:^15}'.format(v_con),
                   "{0:>6.3f} %".format(v_con * 100 / compute_time), '    {:2}'.format(k_rel), '{:^15}'.format(v_rel),
                   "{0:>6.3f} %".format(v_rel * 100 / compute_time))
+
+        relaxed_result = [value * 100 / compute_time for value in relaxed_result.values()]
+        conventional_result = [value * 100 / compute_time for value in conventional_result.values()]
+        line_rel, = plt.plot(range(0, len(job_list) + 1), relaxed_result, 'bo-', label="Relaxed Checkpointing")
+        line_conv, = plt.plot(range(0, len(job_list) + 1), conventional_result, 'ro-', label="Conventional")
+        plt.legend(handles=[line_rel, line_conv])
+        plt.title("Time spent in Contending while Checkpointing\n as a Percentage of Total Time")
+        plt.xlabel("Number of Applications")
+        plt.ylabel("Percentage Time Spent Contending (%)")
+        plt.show()
 
 
 """

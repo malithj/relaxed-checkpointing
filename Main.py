@@ -26,7 +26,7 @@ def main():
     Relaxed Checkpoint Simulator simulates the execution of an application given the job parameters required
     """
     MAX_JOBS = 10
-    RUNTIME = 50 * HOUR
+    RUNTIME = 5000 * HOUR
     OCI_LIST = [1.2 * HOUR, 1.7 * HOUR, 2.1 * HOUR, 2.8 * HOUR, 3.3 * HOUR, 4.7 * HOUR]
     BETA_LIST = [0.1 * HOUR, 0.2 * HOUR, 0.25 * HOUR, 0.3 * HOUR, 0.35 * HOUR, 0.4 * HOUR]
     CONCURRENCY = 10
