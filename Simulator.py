@@ -88,16 +88,22 @@ class Simulator:
         relaxed_result_cont, job_result_rel_cont = self.__get_result_based_on_mode(Mode.RELAXED_CHKPNT, job_list,
                                                                                    contention=True)
 
-        print('\r{:^20}'.format("Conventional"), '    {:^20}'.format("Relaxed Checkpointing"), '{:^20}'.format("Conventional"), '    {:^20}'.format("Relaxed Checkpointing"))
+        print('\r{:^20}'.format("Conventional"), '    {:^20}'.format("Relaxed Checkpointing"),
+              '{:^20}'.format("Conventional"), '    {:^20}'.format("Relaxed Checkpointing"))
         print('{:^4}'.format("Apps"), '{:^4}'.format("Time"), '{:^10}'.format("Percentage"), '    {:^4}'.format("Apps"),
-              '{:^4}'.format("Time"), '{:^10}'.format("Percentage"), '    {:^4}'.format("Apps"), '{:^4}'.format("Time"), '{:^10}'.format("Percentage"), '    {:^4}'.format("Apps"),
+              '{:^4}'.format("Time"), '{:^10}'.format("Percentage"), '    {:^4}'.format("Apps"), '{:^4}'.format("Time"),
+              '{:^10}'.format("Percentage"), '    {:^4}'.format("Apps"),
               '{:^4}'.format("Time"), '{:^10}'.format("Percentage"))
 
-        for (k_con, v_con), (k_rel, v_rel), (k_con_cont, v_con_cont), (k_rel_cont, v_rel_cont) in zip(conventional_result.items(), relaxed_result.items(), conventional_result_cont.items(), relaxed_result_cont.items()):
+        for (k_con, v_con), (k_rel, v_rel), (k_con_cont, v_con_cont), (k_rel_cont, v_rel_cont) in zip(
+                conventional_result.items(), relaxed_result.items(), conventional_result_cont.items(),
+                relaxed_result_cont.items()):
             print('{:2}'.format(k_con), '{:^8}'.format(v_con),
                   "{0:>6.3f} %".format(v_con * 100 / compute_time), '    {:2}'.format(k_rel), '{:^8}'.format(v_rel),
-                  "{0:>6.3f} %".format(v_rel * 100 / compute_time), '    {:2}'.format(k_con_cont), '{:^8}'.format(v_con_cont),
-                  "{0:>6.3f} %".format(v_con_cont * 100 / compute_time), '    {:2}'.format(k_rel_cont), '{:^8}'.format(v_rel_cont),
+                  "{0:>6.3f} %".format(v_rel * 100 / compute_time), '    {:2}'.format(k_con_cont),
+                  '{:^8}'.format(v_con_cont),
+                  "{0:>6.3f} %".format(v_con_cont * 100 / compute_time), '    {:2}'.format(k_rel_cont),
+                  '{:^8}'.format(v_rel_cont),
                   "{0:>6.3f} %".format(v_rel_cont * 100 / compute_time))
 
         print('\n{:^26}'.format("Conventional"), '    {:^28}'.format("Relaxed Checkpointing"))
@@ -110,7 +116,9 @@ class Simulator:
         con_useful_cont = 0
         rel_useful_cont = 0
 
-        for (k_con, v_con), (k_rel, v_rel), (k_con_cont, v_con_cont), (k_rel_cont, v_rel_cont) in zip(job_result_conv.items(), job_result_rel.items(), job_result_conv_cont.items(), job_result_rel_cont.items()):
+        for (k_con, v_con), (k_rel, v_rel), (k_con_cont, v_con_cont), (k_rel_cont, v_rel_cont) in zip(
+                job_result_conv.items(), job_result_rel.items(), job_result_conv_cont.items(),
+                job_result_rel_cont.items()):
             print('{:2}'.format(k_con), '{:^15}'.format(v_con.__get_useful_work__()),
                   "{0:>6.3f} %".format(v_con.__get_useful_work__() * 100 / compute_time), '    {:2}'.format(k_rel),
                   '{:^15}'.format(v_rel.__get_useful_work__()),
@@ -122,39 +130,47 @@ class Simulator:
 
         print("\nSystem Average Useful Work")
         print('\n{:^26}'.format("Conventional"), '    {:^28}'.format("Relaxed Checkpointing"))
-        print('{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"), '{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"))
-        print('{0:^18} {1:^13} {2:^18} {3:^13}'.format(con_useful * 100/ (compute_time * len(job_list)), con_useful_cont * 100 / (compute_time * len(job_list)), rel_useful * 100/ (compute_time * len(job_list)), rel_useful_cont * 100/ (compute_time * len(job_list))))
+        print('{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"),
+              '{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"))
+        print('{0:^18} {1:^13} {2:^18} {3:^13}'.format(con_useful * 100 / (compute_time * len(job_list)),
+                                                       con_useful_cont * 100 / (compute_time * len(job_list)),
+                                                       rel_useful * 100 / (compute_time * len(job_list)),
+                                                       rel_useful_cont * 100 / (compute_time * len(job_list))))
+
+        conv_without_score = 0
+        conv_with_score = 0
+        rel_without_score = 0
+        rel_with_score = 0
+        for (k_con, v_con), (k_rel, v_rel), (k_con_cont, v_con_cont), (k_rel_cont, v_rel_cont) in zip(
+                conventional_result.items(), relaxed_result.items(), conventional_result_cont.items(),
+                relaxed_result_cont.items()):
+            conv_without_score += k_con * (v_con / compute_time)
+            rel_without_score += k_rel * (v_rel / compute_time)
+            conv_with_score += k_con_cont * (v_con_cont / compute_time)
+            rel_with_score += k_rel_cont * (v_rel_cont / compute_time)
+        print("\nContention Score")
+        print('\n{:^26}'.format("Conventional"), '    {:^28}'.format("Relaxed Checkpointing"))
+        print('{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"),
+              '{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"))
+        print('{0:^18} {1:^13} {2:^18} {3:^13}'.format(conv_without_score, conv_with_score, rel_without_score,
+                                                       rel_with_score))
 
         relaxed_result_plot = [value * 100 / compute_time for value in relaxed_result.values()]
         conventional_result_plot = [value * 100 / compute_time for value in conventional_result.values()]
         relaxed_result_cont_plot = [value * 100 / compute_time for value in relaxed_result_cont.values()]
         conventional_result_cont_plot = [value * 100 / compute_time for value in conventional_result_cont.values()]
-        line_rel, = plt.plot(range(0, len(job_list) + 1), relaxed_result_plot, 'bo-', label="Relaxed Checkpointing - Without Contention")
-        line_conv, = plt.plot(range(0, len(job_list) + 1), conventional_result_plot, 'ro-', label="Conventional - Without Contention")
-        line_rel_cont, = plt.plot(range(0, len(job_list) + 1), relaxed_result_cont_plot, 'go-', label="Relaxed Checkpointing - With Contention")
-        line_conv_cont, = plt.plot(range(0, len(job_list) + 1), conventional_result_cont_plot, 'yo-', label="Conventional - With Contention")
+        line_rel, = plt.plot(range(0, len(job_list) + 1), relaxed_result_plot, 'bo-',
+                             label="Relaxed Checkpointing - Without Contention")
+        line_conv, = plt.plot(range(0, len(job_list) + 1), conventional_result_plot, 'ro-',
+                              label="Conventional - Without Contention")
+        line_rel_cont, = plt.plot(range(0, len(job_list) + 1), relaxed_result_cont_plot, 'go-',
+                                  label="Relaxed Checkpointing - With Contention")
+        line_conv_cont, = plt.plot(range(0, len(job_list) + 1), conventional_result_cont_plot, 'yo-',
+                                   label="Conventional - With Contention")
         plt.legend(handles=[line_rel, line_conv, line_rel_cont, line_conv_cont])
         plt.title("Time spent against the number of applications doing I/O simultaneously")
         plt.xlabel("Number of Applications doing I/O Simultaneously")
         plt.ylabel("Time Observed as a Percentage(%)")
-        plt.show()
-
-        relaxed_result_plot = [job.__get_useful_work__() * 100 / compute_time for job in job_result_rel.values()]
-        conventional_result_plot = [job.__get_useful_work__() * 100 / compute_time for job in job_result_conv.values()]
-        relaxed_result_cont_plot = [job.__get_useful_work__() * 100 / compute_time for job in job_result_rel_cont.values()]
-        conventional_result_cont_plot = [job.__get_useful_work__() * 100 / compute_time for job in job_result_conv_cont.values()]
-        line_rel, = plt.plot(range(0, len(job_list)), relaxed_result_plot, 'bo-',
-                             label="Relaxed Checkpointing - Without Contention")
-        line_conv, = plt.plot(range(0, len(job_list)), conventional_result_plot, 'ro-',
-                              label="Conventional - Without Contention")
-        line_rel_cont, = plt.plot(range(0, len(job_list)), relaxed_result_cont_plot, 'go-',
-                             label="Relaxed Checkpointing - With Contention")
-        line_conv_cont, = plt.plot(range(0, len(job_list)), conventional_result_cont_plot, 'yo-',
-                              label="Conventional - With Contention")
-        plt.legend(handles=[line_rel, line_conv, line_rel_cont, line_conv_cont])
-        plt.title("Time Spent Doing Useful Work as a Percentage Against the Application id")
-        plt.xlabel("Appication id")
-        plt.ylabel("Time as a Percentage(%)")
         plt.show()
 
         print("\nJob Information")
@@ -166,22 +182,36 @@ class Simulator:
 
         with open('results/time-seen-multiple-apps-doing-io.csv', 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
-            writer.writerow(['conv_num_apps', 'overlapped_time_in_seconds_without_contention', 'precentage_time_without_contention', 'rel_num_apps',
-                             'overlapped_time_in_seconds_without_contention', 'percentage_time_without_contention', 'conv_num_apps', 'overlapped_time_in_seconds_with_contention', 'precentage_time_with_contention', 'rel_num_apps',
-                             'overlapped_time_in_seconds_with_contention', 'percentage_time_with_contention'])
-            for (k_con, v_con), (k_rel, v_rel), (k_con_cont, v_con_cont), (k_rel_cont, v_rel_cont) in zip(conventional_result.items(), relaxed_result.items(), conventional_result_cont.items(), relaxed_result_cont.items()):
-                writer.writerow([k_con, v_con, v_con * 100 / compute_time, k_rel, v_rel, v_rel * 100 / compute_time,  k_con_cont, v_con_cont, v_con_cont * 100 / compute_time,  k_rel_cont, v_rel_cont, v_rel_cont * 100 / compute_time])
+            writer.writerow(
+                ['conv_num_apps', 'overlapped_time_in_seconds_without_contention', 'precentage_time_without_contention',
+                 'rel_num_apps',
+                 'overlapped_time_in_seconds_without_contention', 'percentage_time_without_contention', 'conv_num_apps',
+                 'overlapped_time_in_seconds_with_contention', 'precentage_time_with_contention', 'rel_num_apps',
+                 'overlapped_time_in_seconds_with_contention', 'percentage_time_with_contention'])
+            for (k_con, v_con), (k_rel, v_rel), (k_con_cont, v_con_cont), (k_rel_cont, v_rel_cont) in zip(
+                    conventional_result.items(), relaxed_result.items(), conventional_result_cont.items(),
+                    relaxed_result_cont.items()):
+                writer.writerow(
+                    [k_con, v_con, v_con * 100 / compute_time, k_rel, v_rel, v_rel * 100 / compute_time, k_con_cont,
+                     v_con_cont, v_con_cont * 100 / compute_time, k_rel_cont, v_rel_cont,
+                     v_rel_cont * 100 / compute_time])
 
         with open('results/useful-work-done-per-each-application.csv', 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
             writer.writerow(
-                ['conv_app_id', 'useful_work_in_seconds_without_cont', 'precentage_time_without_cont', 'rel_app_id', 'useful_work_in_seconds_without_cont',
-                 'percentage_time_without_cont', 'conv_app_id', 'useful_work_in_seconds_with_cont', 'precentage_time_with_cont', 'rel_app_id', 'useful_work_in_seconds_with_cont',
+                ['conv_app_id', 'useful_work_in_seconds_without_cont', 'precentage_time_without_cont', 'rel_app_id',
+                 'useful_work_in_seconds_without_cont',
+                 'percentage_time_without_cont', 'conv_app_id', 'useful_work_in_seconds_with_cont',
+                 'precentage_time_with_cont', 'rel_app_id', 'useful_work_in_seconds_with_cont',
                  'percentage_time_with_cont'])
-            for (k_con, v_con), (k_rel, v_rel), (k_con_cont, v_con_cont), (k_rel_cont, v_rel_cont) in zip(job_result_conv.items(), job_result_rel.items(), job_result_conv_cont.items(), job_result_rel_cont.items()):
+            for (k_con, v_con), (k_rel, v_rel), (k_con_cont, v_con_cont), (k_rel_cont, v_rel_cont) in zip(
+                    job_result_conv.items(), job_result_rel.items(), job_result_conv_cont.items(),
+                    job_result_rel_cont.items()):
                 writer.writerow(
                     [k_con, v_con.__get_useful_work__(), v_con.__get_useful_work__() * 100 / compute_time, k_rel,
-                     v_rel.__get_useful_work__(), v_rel.__get_useful_work__() * 100 / compute_time, k_con_cont, v_con_cont.__get_useful_work__(), v_con_cont.__get_useful_work__() * 100 / compute_time, k_rel_cont,
+                     v_rel.__get_useful_work__(), v_rel.__get_useful_work__() * 100 / compute_time, k_con_cont,
+                     v_con_cont.__get_useful_work__(), v_con_cont.__get_useful_work__() * 100 / compute_time,
+                     k_rel_cont,
                      v_rel_cont.__get_useful_work__(), v_rel_cont.__get_useful_work__() * 100 / compute_time])
 
         with open('results/job-info.csv', 'w', newline='') as csvfile:
@@ -189,7 +219,24 @@ class Simulator:
             writer.writerow(
                 ['Jobid', 'beta (HRS)', 'alpha (HRS)'])
             for index, job in enumerate(job_list):
-                writer.writerow([index, job.__get_beta__()/3600, job.__get_alpha__()/3600])
+                writer.writerow([index, job.__get_beta__() / 3600, job.__get_alpha__() / 3600])
+
+        with open('results/avg-contention-score.csv', 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile, delimiter=',')
+            writer.writerow(
+                ['conventional_without_contention', 'conventional_with_contention', 'rel_without_contention',
+                 'rel_with_contention'])
+            writer.writerow([conv_without_score, conv_with_score, rel_without_score, rel_with_score])
+
+        with open('results/avg-useful-work.csv', 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile, delimiter=',')
+            writer.writerow(
+                ['conventional_without_contention', 'conventional_with_contention', 'rel_without_contention',
+                 'rel_with_contention'])
+            writer.writerow([con_useful * 100 / (compute_time * len(job_list)),
+                             con_useful_cont * 100 / (compute_time * len(job_list)),
+                             rel_useful * 100 / (compute_time * len(job_list)),
+                             rel_useful_cont * 100 / (compute_time * len(job_list))])
 
 
 """
