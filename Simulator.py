@@ -105,11 +105,25 @@ class Simulator:
               '    {:^4}'.format("Apps"),
               '{:^4}'.format("Useful Work"), '{:^10}'.format("Percentage"))
 
-        for (k_con, v_con), (k_rel, v_rel) in zip(job_result_conv.items(), job_result_rel.items()):
+        con_useful = 0
+        rel_useful = 0
+        con_useful_cont = 0
+        rel_useful_cont = 0
+
+        for (k_con, v_con), (k_rel, v_rel), (k_con_cont, v_con_cont), (k_rel_cont, v_rel_cont) in zip(job_result_conv.items(), job_result_rel.items(), job_result_conv_cont.items(), job_result_rel_cont.items()):
             print('{:2}'.format(k_con), '{:^15}'.format(v_con.__get_useful_work__()),
                   "{0:>6.3f} %".format(v_con.__get_useful_work__() * 100 / compute_time), '    {:2}'.format(k_rel),
                   '{:^15}'.format(v_rel.__get_useful_work__()),
                   "{0:>6.3f} %".format(v_rel.__get_useful_work__() * 100 / compute_time))
+            con_useful += v_con.__get_useful_work__()
+            rel_useful += v_rel.__get_useful_work__()
+            con_useful_cont += v_con_cont.__get_useful_work__()
+            rel_useful_cont += v_rel_cont.__get_useful_work__()
+
+        print("\nSystem Average Useful Work")
+        print('\n{:^26}'.format("Conventional"), '    {:^28}'.format("Relaxed Checkpointing"))
+        print('{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"), '{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"))
+        print('{0:^18} {1:^13} {2:^18} {3:^13}'.format(con_useful * 100/ (compute_time * len(job_list)), con_useful_cont * 100 / (compute_time * len(job_list)), rel_useful * 100/ (compute_time * len(job_list)), rel_useful_cont * 100/ (compute_time * len(job_list))))
 
         relaxed_result_plot = [value * 100 / compute_time for value in relaxed_result.values()]
         conventional_result_plot = [value * 100 / compute_time for value in conventional_result.values()]
@@ -150,7 +164,7 @@ class Simulator:
         if not os.path.exists('results'):
             os.makedirs('results', 0o777)
 
-        with open('results/without-contention-time-seen-multiple-apps-doing-io.csv', 'w', newline='') as csvfile:
+        with open('results/time-seen-multiple-apps-doing-io.csv', 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
             writer.writerow(['conv_num_apps', 'overlapped_time_in_seconds_without_contention', 'precentage_time_without_contention', 'rel_num_apps',
                              'overlapped_time_in_seconds_without_contention', 'percentage_time_without_contention', 'conv_num_apps', 'overlapped_time_in_seconds_with_contention', 'precentage_time_with_contention', 'rel_num_apps',
@@ -158,7 +172,7 @@ class Simulator:
             for (k_con, v_con), (k_rel, v_rel), (k_con_cont, v_con_cont), (k_rel_cont, v_rel_cont) in zip(conventional_result.items(), relaxed_result.items(), conventional_result_cont.items(), relaxed_result_cont.items()):
                 writer.writerow([k_con, v_con, v_con * 100 / compute_time, k_rel, v_rel, v_rel * 100 / compute_time,  k_con_cont, v_con_cont, v_con_cont * 100 / compute_time,  k_rel_cont, v_rel_cont, v_rel_cont * 100 / compute_time])
 
-        with open('results/without-contention-useful-work-done-per-each-application.csv', 'w', newline='') as csvfile:
+        with open('results/useful-work-done-per-each-application.csv', 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
             writer.writerow(
                 ['conv_app_id', 'useful_work_in_seconds_without_cont', 'precentage_time_without_cont', 'rel_app_id', 'useful_work_in_seconds_without_cont',
