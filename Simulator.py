@@ -130,12 +130,10 @@ class Simulator:
 
         print("\nSystem Average Useful Work")
         print('\n{:^26}'.format("Conventional"), '    {:^28}'.format("Relaxed Checkpointing"))
-        print('{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"),
-              '{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"))
-        print('{0:^18} {1:^13} {2:^18} {3:^13}'.format(con_useful * 100 / (compute_time * len(job_list)),
-                                                       con_useful_cont * 100 / (compute_time * len(job_list)),
-                                                       rel_useful * 100 / (compute_time * len(job_list)),
-                                                       rel_useful_cont * 100 / (compute_time * len(job_list))))
+        '''print('{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"),
+              '{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"))'''
+        print('{0:^18} {1:^18}'.format(con_useful * 100 / (compute_time * len(job_list)),
+                                                       rel_useful * 100 / (compute_time * len(job_list))))
 
         conv_without_score = 0
         conv_with_score = 0
@@ -150,10 +148,9 @@ class Simulator:
             rel_with_score += k_rel_cont * (v_rel_cont / compute_time)
         print("\nContention Score")
         print('\n{:^26}'.format("Conventional"), '    {:^28}'.format("Relaxed Checkpointing"))
-        print('{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"),
-              '{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"))
-        print('{0:^18} {1:^13} {2:^18} {3:^13}'.format(conv_without_score, conv_with_score, rel_without_score,
-                                                       rel_with_score))
+        '''print('{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"),
+              '{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"))'''
+        print('{0:^18} {1:^13}'.format(conv_without_score, rel_without_score))
 
         relaxed_result_plot = [value * 100 / compute_time for value in relaxed_result.values()]
         conventional_result_plot = [value * 100 / compute_time for value in conventional_result.values()]

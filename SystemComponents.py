@@ -66,8 +66,8 @@ class Job:
 
     def __reset_remaining_time__(self, mode):
         self.__status = JobStatus.RUNNING
-        self.__remaining_time = random.randint(self.__alpha - self.__beta * 0.5,
-                                               self.__alpha + self.__beta * 0.5) if mode == Mode.RELAXED_CHKPNT else self.__alpha
+        self.__remaining_time = random.randint(int(self.__alpha - self.__beta * 0.5),
+                                               int(self.__alpha + self.__beta * 0.5)) if mode == Mode.RELAXED_CHKPNT else self.__alpha
 
     def __repr__(self):
         return "Beta:{0:>7} HRS,Alpha:{1:>5} HRS,Useful:{2:>5} HRS".format(str(self.__beta / 3600),
