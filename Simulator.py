@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from SystemComponents import Mode, Machine, Job
-from multiprocessing import Pool
 import matplotlib.pyplot as plt
 import copy
 import csv
@@ -46,14 +45,9 @@ class Simulator:
         concurrency = self.__simulator_properties.__get_concurrency__()
         is_contention = contention
         work_per_process = int(compute_time / concurrency)
-        p = Pool(concurrency)
-        result_list = p.map(simulator_function,
-                            [(mode, work_per_process, is_contention, copy.deepcopy(job_list), num) for num
-                             in range(0, concurrency)])
-        result_list_mode = [result[0] for result in result_list]
-        job_list_mode = [result[1] for result in result_list]
-        p.close()
-        p.join()
+        result_list = simulator_function([mode, work_per_process, is_contention, copy.deepcopy(job_list), 0])
+        result_list_mode = [result_list[0]]
+        job_list_mode = [result_list[1]]
 
         mode_result = {}
         for result_item in result_list_mode:
