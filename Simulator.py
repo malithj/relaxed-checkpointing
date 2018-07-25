@@ -124,27 +124,42 @@ class Simulator:
 
         print("\nSystem Average Useful Work")
         print('\n{:^26}'.format("Conventional"), '    {:^28}'.format("Relaxed Checkpointing"))
-        '''print('{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"),
-              '{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"))'''
-        print('{0:^18} {1:^18}'.format(con_useful * 100 / (compute_time * len(job_list)),
-                                                       rel_useful * 100 / (compute_time * len(job_list))))
+        print('{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"),
+              '{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"))
+        print('{0:^18} {1:^13} {2:^18} {3:^13}'.format(con_useful * 100 / (compute_time * len(job_list)),
+                                                       con_useful_cont * 100 / (compute_time * len(job_list)),
+                                                       rel_useful * 100 / (compute_time * len(job_list)),
+                                                       rel_useful_cont * 100 / (compute_time * len(job_list))))
 
         conv_without_score = 0
         conv_with_score = 0
         rel_without_score = 0
         rel_with_score = 0
+        conv_adj_compute_time = compute_time
+        rel_adj_compute_time = compute_time
+        conv_cont_adj_compute_time = compute_time
+        rel_cont_adj_compute_time = compute_time
+
         for (k_con, v_con), (k_rel, v_rel), (k_con_cont, v_con_cont), (k_rel_cont, v_rel_cont) in zip(
                 conventional_result.items(), relaxed_result.items(), conventional_result_cont.items(),
                 relaxed_result_cont.items()):
-            conv_without_score += k_con * (v_con / compute_time)
-            rel_without_score += k_rel * (v_rel / compute_time)
-            conv_with_score += k_con_cont * (v_con_cont / compute_time)
-            rel_with_score += k_rel_cont * (v_rel_cont / compute_time)
+            if k_con == 0:
+                conv_adj_compute_time -= v_con
+                rel_adj_compute_time -= v_rel
+                conv_cont_adj_compute_time -= v_con_cont
+                rel_cont_adj_compute_time -= v_rel_cont
+                continue
+
+            conv_without_score += (k_con - 1) * (v_con / conv_adj_compute_time)
+            rel_without_score += (k_rel - 1) * (v_rel / rel_adj_compute_time)
+            conv_with_score += (k_con_cont - 1) * (v_con_cont / conv_cont_adj_compute_time)
+            rel_with_score += (k_rel_cont - 1) * (v_rel_cont / rel_cont_adj_compute_time)
         print("\nContention Score")
         print('\n{:^26}'.format("Conventional"), '    {:^28}'.format("Relaxed Checkpointing"))
-        '''print('{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"),
-              '{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"))'''
-        print('{0:^18} {1:^13}'.format(conv_without_score, rel_without_score))
+        print('{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"),
+              '{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"))
+        print('{0:^18} {1:^13} {2:^18} {3:^13}'.format(conv_without_score, conv_with_score, rel_without_score,
+                                                       rel_with_score))
 
         relaxed_result_plot = [value * 100 / compute_time for value in relaxed_result.values()]
         conventional_result_plot = [value * 100 / compute_time for value in conventional_result.values()]
