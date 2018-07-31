@@ -28,7 +28,7 @@ def initialize_jobs(oci_list, beta_list, max_num):
     for x in range(0, max_num):
         job = Job(random.choice(oci_list), random.choice(beta_list))
         job.__set_status__(JobStatus.RUNNING)
-        job.__set_start_time__(get_gamma() * HOUR)
+        job.__set_start_time__(0)
         job_list.append(job)
     return job_list
 
@@ -40,7 +40,7 @@ def main():
     MAX_JOBS = 40
     RUNTIME = 500 * HOUR
     #OCI_LIST = [1.2 * HOUR, 1.7 * HOUR, 2.1 * HOUR, 2.8 * HOUR, 3.3 * HOUR, 4.7 * HOUR]
-    OCI_LIST = [1.5 * HOUR, 1.7 * HOUR, 2.1 * HOUR]
+    OCI_LIST = [1.2 * HOUR, 1.7 * HOUR, 2.1 * HOUR]
     #BETA_LIST = [0.1 * HOUR, 0.2 * HOUR, 0.25 * HOUR, 0.3 * HOUR, 0.35 * HOUR, 0.4 * HOUR]
     BETA_LIST = [0.25 * HOUR, 0.35 * HOUR]
     CONCURRENCY = 1

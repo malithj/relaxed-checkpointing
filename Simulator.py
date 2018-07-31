@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
 from SystemComponents import Mode, Machine, Job
+from EventGenerator import FailureEventStorage, FailureEventGenerator, DistributionType, Distribution
 import matplotlib.pyplot as plt
 import copy
 import csv
 import os
+HOUR = 3600
 
 
 def simulator_function(args):
-    mode, time_quantum, is_contention, job_list, num = args
-    system = Machine()
+    mode, time_quantum, is_contention, job_list, num, failure_generator = args
+    failure_generator.reset_index()
+    system = Machine(failure_generator)
     system.__add_job_list__(job_list)
     if is_contention:
         system.__turn_on_contention__()
@@ -39,13 +42,16 @@ class Simulator:
 
     def __init__(self, simulator_properties):
         self.__simulator_properties = simulator_properties
+        failure_gen = FailureEventGenerator(5 * HOUR, Distribution(DistributionType.WEIBULL, beta=0.6))
+        self.__failure_generator = FailureEventStorage(failure_gen)
+        self.__failure_generator.init_failure_storage(self.__simulator_properties.__get_compute_time__())
 
     def __get_result_based_on_mode(self, mode, job_list, contention=False):
         compute_time = self.__simulator_properties.__get_compute_time__()
         concurrency = self.__simulator_properties.__get_concurrency__()
         is_contention = contention
         work_per_process = int(compute_time / concurrency)
-        result_list = simulator_function([mode, work_per_process, is_contention, copy.deepcopy(job_list), 0])
+        result_list = simulator_function([mode, work_per_process, is_contention, copy.deepcopy(job_list), 0, self.__failure_generator])
         result_list_mode = [result_list[0]]
         job_list_mode = [result_list[1]]
 
@@ -64,10 +70,7 @@ class Simulator:
                     job_result[index].__set_useful_work__(
                         job_result[index].__get_useful_work__() + job.__get_useful_work__())
                 else:
-                    job_tracker = Job()
-                    job_tracker.__set_useful_work__(job.__get_useful_work__())
-                    job_tracker.__set_checkpoint_number__(job.__get_number_of_checkpoints__())
-                    job_result[index] = job_tracker
+                    job_result[index] = job
 
         return mode_result, job_result
 
@@ -122,6 +125,63 @@ class Simulator:
             rel_useful += v_rel.__get_useful_work__()
             con_useful_cont += v_con_cont.__get_useful_work__()
             rel_useful_cont += v_rel_cont.__get_useful_work__()
+
+        print('\n{:^20}'.format("Conventional"), '    {:^20}'.format("Relaxed Checkpointing"),
+              '{:^20}'.format("Conventional"), '    {:^20}'.format("Relaxed Checkpointing"))
+        print('{:^4}'.format("Apps"), '{:^4}'.format("Useful"), '{:^10}'.format("Percentage"), '    {:^4}'.format("Apps"),
+              '{:^4}'.format("Useful"), '{:^10}'.format("Percentage"), '    {:^4}'.format("Apps"), '{:^4}'.format("Useful"),
+              '{:^10}'.format("Percentage"), '    {:^4}'.format("Apps"),
+              '{:^4}'.format("Useful"), '{:^10}'.format("Percentage"))
+
+        for (k_con, v_con), (k_rel, v_rel), (k_con_cont, v_con_cont), (k_rel_cont, v_rel_cont) in zip(
+                job_result_conv.items(), job_result_rel.items(), job_result_conv_cont.items(),
+                job_result_rel_cont.items()):
+            print('{:2}'.format(k_con), '{:^8}'.format(v_con.__get_useful_work__()),
+                  "{0:>6.3f} %".format(v_con.__get_useful_work__() * 100 / compute_time), '    {:2}'.format(k_rel),
+                  '{:^8}'.format(v_rel.__get_useful_work__()),
+                  "{0:>6.3f} %".format(v_rel.__get_useful_work__() * 100 / compute_time), '    {:2}'.format(k_con_cont),
+                  '{:^8.3f}'.format(v_con_cont.__get_useful_work__()),
+                  "{0:>6.3f} %".format(v_con_cont.__get_useful_work__() * 100 / compute_time),
+                  '    {:2}'.format(k_rel_cont),
+                  '{:^8.3f}'.format(v_rel_cont.__get_useful_work__()),
+                  "{0:>6.3f} %".format(v_rel_cont.__get_useful_work__() * 100 / compute_time))
+
+        print('\n{:^20}'.format("Conventional"), '    {:^20}'.format("Relaxed Checkpointing"),
+              '{:^20}'.format("Conventional"), '    {:^20}'.format("Relaxed Checkpointing"))
+        print('{:^4}'.format("Apps"), '{:^4}'.format("Lost"), '{:^10}'.format("Percentage"), '    {:^4}'.format("Apps"),
+              '{:^4}'.format("Lost"), '{:^10}'.format("Percentage"), '    {:^4}'.format("Apps"), '{:^4}'.format("Lost"),
+              '{:^10}'.format("Percentage"), '    {:^4}'.format("Apps"),
+              '{:^4}'.format("Lost"), '{:^10}'.format("Percentage"))
+
+        for (k_con, v_con), (k_rel, v_rel), (k_con_cont, v_con_cont), (k_rel_cont, v_rel_cont) in zip(
+                job_result_conv.items(), job_result_rel.items(), job_result_conv_cont.items(),
+                job_result_rel_cont.items()):
+            print('{:2}'.format(k_con), '{:^8}'.format(v_con.__get_lost_work__()),
+                  "{0:>6.3f} %".format(v_con.__get_lost_work__() * 100 / compute_time), '    {:2}'.format(k_rel), '{:^8}'.format(v_rel.__get_lost_work__()),
+                  "{0:>6.3f} %".format(v_rel.__get_lost_work__() * 100 / compute_time), '    {:2}'.format(k_con_cont),
+                  '{:^8.3f}'.format(v_con_cont.__get_lost_work__()),
+                  "{0:>6.3f} %".format(v_con_cont.__get_lost_work__() * 100 / compute_time), '    {:2}'.format(k_rel_cont),
+                  '{:^8.3f}'.format(v_rel_cont.__get_lost_work__()),
+                  "{0:>6.3f} %".format(v_rel_cont.__get_lost_work__() * 100 / compute_time))
+
+        print('\n{:^20}'.format("Conventional"), '    {:^20}'.format("Relaxed Checkpointing"),
+              '{:^20}'.format("Conventional"), '    {:^20}'.format("Relaxed Checkpointing"))
+        print('{:^4}'.format("Apps"), '{:^4}'.format("I/O"), '{:^10}'.format("Percentage"), '    {:^4}'.format("Apps"),
+              '{:^4}'.format("I/O"), '{:^10}'.format("Percentage"), '    {:^4}'.format("Apps"), '{:^4}'.format("I/O"),
+              '{:^10}'.format("Percentage"), '    {:^4}'.format("Apps"),
+              '{:^4}'.format("I/O"), '{:^10}'.format("Percentage"))
+
+        for (k_con, v_con), (k_rel, v_rel), (k_con_cont, v_con_cont), (k_rel_cont, v_rel_cont) in zip(
+                job_result_conv.items(), job_result_rel.items(), job_result_conv_cont.items(),
+                job_result_rel_cont.items()):
+            print('{:2}'.format(k_con), '{:^8}'.format(v_con.__get_io_time__()),
+                  "{0:>6.3f} %".format(v_con.__get_io_time__() * 100 / compute_time), '    {:2}'.format(k_rel), '{:^8}'.format(v_rel.__get_io_time__()),
+                  "{0:>6.3f} %".format(v_rel.__get_io_time__() * 100 / compute_time), '    {:2}'.format(k_con_cont),
+                  '{:^8}'.format(v_con_cont.__get_io_time__()),
+                  "{0:>6.3f} %".format(v_con_cont.__get_io_time__() * 100 / compute_time), '    {:2}'.format(k_rel_cont),
+                  '{:^8}'.format(v_rel_cont.__get_io_time__()),
+                  "{0:>6.3f} %".format(v_rel_cont.__get_io_time__() * 100 / compute_time))
+
 
         print("\nSystem Average Useful Work")
         print('\n{:^26}'.format("Conventional"), '    {:^28}'.format("Relaxed Checkpointing"))
