@@ -66,6 +66,7 @@ class Simulator:
                 else:
                     job_tracker = Job()
                     job_tracker.__set_useful_work__(job.__get_useful_work__())
+                    job_tracker.__set_checkpoint_number__(job.__get_number_of_checkpoints__())
                     job_result[index] = job_tracker
 
         return mode_result, job_result
@@ -160,6 +161,45 @@ class Simulator:
               '{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"))
         print('{0:^18} {1:^13} {2:^18} {3:^13}'.format(conv_without_score, conv_with_score, rel_without_score,
                                                        rel_with_score))
+
+        for (k_con, v_con), (k_rel, v_rel), (k_con_cont, v_con_cont), (k_rel_cont, v_rel_cont) in zip(
+                conventional_result.items(), relaxed_result.items(), conventional_result_cont.items(),
+                relaxed_result_cont.items()):
+            conv_without_score += k_con * (v_con / compute_time)
+            rel_without_score += k_rel * (v_rel / compute_time)
+            conv_with_score += k_con_cont * (v_con_cont / compute_time)
+            rel_with_score += k_rel_cont * (v_rel_cont / compute_time)
+
+        print("\nAverage Number of Apps Contending")
+        print('\n{:^26}'.format("Conventional"), '    {:^28}'.format("Relaxed Checkpointing"))
+        print('{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"),
+              '{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"))
+        print('{0:^18} {1:^13} {2:^18} {3:^13}'.format(conv_without_score, conv_with_score, rel_without_score,
+                                                       rel_with_score))
+
+        con_without_cp = 0
+        con_with_cp = 0
+        rel_without_cp = 0
+        rel_with_cp = 0
+
+        print("\nNumber of checkpoints per each job ")
+        for (k_con, v_con), (k_rel, v_rel), (k_con_cont, v_con_cont), (k_rel_cont, v_rel_cont) in zip(
+                job_result_conv.items(), job_result_rel.items(), job_result_conv_cont.items(),
+                job_result_rel_cont.items()):
+            print('{:2}'.format(k_con), '{:^15}'.format(v_con.__get_number_of_checkpoints__()),
+                  "{0:>6.3f}".format(v_con_cont.__get_number_of_checkpoints__()),
+                  '{:^15}'.format(v_rel.__get_number_of_checkpoints__()),
+                  "{0:>6.3f}".format(v_rel_cont.__get_number_of_checkpoints__()))
+            con_without_cp += v_con.__get_number_of_checkpoints__()
+            con_with_cp += v_con_cont.__get_number_of_checkpoints__()
+            rel_without_cp += v_rel.__get_number_of_checkpoints__()
+            rel_with_cp += v_rel_cont.__get_number_of_checkpoints__()
+
+        print("\nNumber of Checkpoints")
+        print('\n{:^26}'.format("Conventional"), '    {:^28}'.format("Relaxed Checkpointing"))
+        print('{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"),
+              '{:^18}'.format("Without contention"), ' {:^13}'.format("With contention"))
+        print('{0:^18} {1:^13} {2:^18} {3:^13}'.format(con_without_cp, con_with_cp, rel_without_cp, rel_with_cp))
 
         relaxed_result_plot = [value * 100 / compute_time for value in relaxed_result.values()]
         conventional_result_plot = [value * 100 / compute_time for value in conventional_result.values()]

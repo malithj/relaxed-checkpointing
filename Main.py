@@ -3,6 +3,7 @@ from SystemComponents import Machine, Job, JobStatus
 from Simulator import Simulator, SimulatorProperties
 import random
 import time
+import numpy as np
 
 HOUR = 3600
 """
@@ -12,11 +13,22 @@ Relaxed Checkpointing randomizes check point interval selection in order to avoi
 """
 
 
+def get_gamma():
+    val = np.random.normal(8.17, 3.96, 1)[0]
+    if val > 24:
+        val = 24
+    val += 5
+    if val >= 24:
+        val = val - 24
+    return int(np.clip(val, 0, 24))
+
+
 def initialize_jobs(oci_list, beta_list, max_num):
     job_list = []
     for x in range(0, max_num):
         job = Job(random.choice(oci_list), random.choice(beta_list))
         job.__set_status__(JobStatus.RUNNING)
+        job.__set_start_time__(get_gamma() * HOUR)
         job_list.append(job)
     return job_list
 
@@ -25,10 +37,12 @@ def main():
     """
     Relaxed Checkpoint Simulator simulates the execution of an application given the job parameters required
     """
-    MAX_JOBS = 10
-    RUNTIME = 50 * HOUR
-    OCI_LIST = [1.2 * HOUR, 1.7 * HOUR, 2.1 * HOUR, 2.8 * HOUR, 3.3 * HOUR, 4.7 * HOUR]
-    BETA_LIST = [0.1 * HOUR, 0.2 * HOUR, 0.25 * HOUR, 0.3 * HOUR, 0.35 * HOUR, 0.4 * HOUR]
+    MAX_JOBS = 40
+    RUNTIME = 500 * HOUR
+    #OCI_LIST = [1.2 * HOUR, 1.7 * HOUR, 2.1 * HOUR, 2.8 * HOUR, 3.3 * HOUR, 4.7 * HOUR]
+    OCI_LIST = [1.5 * HOUR, 1.7 * HOUR, 2.1 * HOUR]
+    #BETA_LIST = [0.1 * HOUR, 0.2 * HOUR, 0.25 * HOUR, 0.3 * HOUR, 0.35 * HOUR, 0.4 * HOUR]
+    BETA_LIST = [0.25 * HOUR, 0.35 * HOUR]
     CONCURRENCY = 1
     IS_CONTENTION = False
 

@@ -20,6 +20,8 @@ class Job:
         self.__io_time = 0
         self.__reset_remaining_time__(Mode.CONVENTIONAL)
         self.__epsilon = 0.5
+        self.__start_time = 0
+        self.__number_of_checkpoints = 0
 
     def __set_status__(self, status):
         self.__status = status
@@ -29,6 +31,7 @@ class Job:
 
     def __reset_at_checkpoint__(self):
         self.__status = JobStatus.CHECKPOINTING
+        self.__number_of_checkpoints += 1
         self.__remaining_time = self.__beta
 
     def __elapse_time__(self, delta=1):
@@ -65,10 +68,22 @@ class Job:
     def __get_io_time__(self):
         return self.__io_time
 
+    def __set_start_time__(self, start_time):
+        self.__start_time = start_time
+
+    def __get_start_time__(self):
+        return self.__start_time
+
+    def __get_number_of_checkpoints__(self):
+        return self.__number_of_checkpoints
+
+    def __set_checkpoint_number__(self, cp_num):
+        self.__number_of_checkpoints = cp_num
+
     def __reset_remaining_time__(self, mode):
         self.__status = JobStatus.RUNNING
-        self.__remaining_time = random.randint(int(self.__alpha - self.__beta * 0.5),
-                                               int(self.__alpha + self.__beta * 0.5)) if mode == Mode.RELAXED_CHKPNT else self.__alpha
+        self.__remaining_time = random.randint(int(self.__alpha - self.__beta * 4),
+                                               int(self.__alpha + self.__beta * 4)) if mode == Mode.RELAXED_CHKPNT else self.__alpha
 
     def __repr__(self):
         return "Beta:{0:>7} HRS,Alpha:{1:>5} HRS,Useful:{2:>5} HRS".format(str(self.__beta / 3600),
@@ -114,13 +129,15 @@ class Machine:
 
     def __init__(self):
         self.__job_list = []
+        self.__job_queue = []
         self.__contention_data = {}
         self.__max_jobs = 0
         self.__is_contention = False
         self.__contention_reporter = ContentionReporter()
+        self.__simulation_time = 0
 
     def __add_job__(self, job):
-        self.__job_list.append(job)
+        self.__job_queue.append(job)
         self.__max_jobs += 1
 
     def __add_job_list__(self, job_list):
@@ -132,6 +149,10 @@ class Machine:
             self.__contention_data[x] = 0
 
     def __elapse_time__(self, mode):
+        for job in self.__job_queue:
+            if job.__get_start_time__() == self.__simulation_time:
+                self.__job_list.append(job)
+
         num_of_cp_jobs = 0
         for job in self.__job_list:
             if job.__get_status__() is JobStatus.CHECKPOINTING:
@@ -152,6 +173,8 @@ class Machine:
             self.__contention_data[num_of_cp_jobs] = 1
         else:
             self.__contention_data[num_of_cp_jobs] += 1
+
+        self.__simulation_time += 1
 
     def __get_contention_data__(self):
         return self.__contention_data
